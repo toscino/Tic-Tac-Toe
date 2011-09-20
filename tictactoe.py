@@ -6,6 +6,7 @@
 #
 # v1.0 - Game Works, Two humans only 
 # v2.0 - Added Computer Player, but it just picks the first available space
+# v2.1 - Computer plans its moves a little, but it isn't great (don't think it is possible to win 3x3)
 #
 
 from Tkinter import *
@@ -45,6 +46,8 @@ for i in range(PLAYSIZE):
 	for j in range(PLAYSIZE):
 		Row.append(0)	
 	Table.append(Row)
+
+
 
 ################################
 #      FindSection(X,Y)
@@ -88,6 +91,7 @@ def FindSection(X,Y):
 
 def CheckWin(X,Y):
 	global Table
+
 	Type = Table[X][Y]  
 
 	######################
@@ -95,13 +99,13 @@ def CheckWin(X,Y):
 
 	Top = (X,Y)	
 	Bottom = (X,Y)
-	count = 1
+	Count = 1
 	i = X
 	j = Y
 	i = i+1
 
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
-		count = count + 1
+		Count = Count + 1
 		Top = (i,j)
 		i= i+1
 
@@ -110,11 +114,11 @@ def CheckWin(X,Y):
 	j = Y
 	i = i -1
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
-		count = count + 1
+		Count = Count + 1
 		Bottom = (i,j)
 		i= i-1
 
-	if (count >= WINNUM):
+	if (Count >= WINNUM):
 		return (Top,Bottom)
 
 	######################
@@ -122,12 +126,12 @@ def CheckWin(X,Y):
 
 	Top = (X,Y)
 	Bottom = (X,Y)
-	count = 1
+	Count = 1
 	i = X
 	j = Y
 	j = j+1
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		count = count + 1
+		Count = Count + 1
 		Top = (i,j)
 		j= j+1
 
@@ -135,27 +139,27 @@ def CheckWin(X,Y):
 	j = Y
 	j = j -1
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		count = count + 1
+		Count = Count + 1
 		Bottom = (i,j)
 		j= j-1
 
-	if (count >= WINNUM):
+	if (Count >= WINNUM):
 		return (Top,Bottom)
 
 
-	######################
+	#####################m#
 	#Check /
 
 	Top = (X,Y)
 	Bottom = (X,Y)
-	count = 1
+	Count = 1
 	i = X
 	j = Y
 	i = i+1
 	j = j-1
  
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		count = count + 1
+		Count = Count + 1
 		Top = (i,j)
 		i = i+1
 		j = j-1
@@ -167,12 +171,12 @@ def CheckWin(X,Y):
 	j = j + 1
 
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		count = count + 1
+		Count = Count + 1
 		Bottom = (i,j)
 		j = j + 1
 		i = i - 1
 
-	if (count >= WINNUM):
+	if (Count >= WINNUM):
 		return (Top,Bottom)
 
 	#############################
@@ -180,14 +184,14 @@ def CheckWin(X,Y):
 
 	Top = (X,Y)
 	Bottom = (X,Y)
-	count = 1
+	Count = 1
 	i = X
 	j = Y
 	i = i + 1
 	j = j + 1
  
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		count = count + 1
+		Count = Count + 1
 		Top = (i,j)
 		i = i + 1
 		j = j + 1
@@ -198,21 +202,44 @@ def CheckWin(X,Y):
 	i = i - 1
 	j = j - 1
 	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		count = count + 1
+		Count = Count + 1
 		Bottom = (i,j)
 		j = j - 1
 		i = i - 1
 
-	if (count >= WINNUM):
+	if (Count >= WINNUM):
 		return (Top,Bottom)
 
 	return 0;
 
+################################
+#      
+# Draws a red line through a set of squares, also sets the Table so no more plays are allowed
+# Inputs (Canvas,(X1,Y1),(X2,Y2))
+# Canvas - The Canvas to Draw on
+# X1 - X Coordinate in Sections of one of the endpoints of a line
+# Y1 - Y Coordinate in Sections of one of the endpoints of a line
+# X2 - X Coordinate in Sections of one of the endpoints of a line
+# Y2 - Y Coordinate in Sections of one of the endpoints of a line
+#
+#
+
 def redline(Canvas, Top, Bottom):
+	global Table
+	
 	Canvas.create_line(Top[0]*SECTIONSIZE+SECTIONSIZE/2,Top[1]*SECTIONSIZE+SECTIONSIZE/2,Bottom[0]*SECTIONSIZE+SECTIONSIZE/2,Bottom[1]*SECTIONSIZE+SECTIONSIZE/2,width = 10, fill = "red")
 	for i in range(PLAYSIZE):
 		for j in range(PLAYSIZE):
 			Table[i][j] = GAMEOVER
+	print "Game Over"
+
+################################
+#      
+# Draws a 'X' on the play surface at the coordinates given
+# Inputs (Canvas,X,Y)
+# Canvas - The Canvas to Draw on
+# X - X Coordinate in Sections
+# Y - Y Coordinate in Sections
 
 def DrawCross(Canvas, X,Y):
 	X1 = X*SECTIONSIZE
@@ -222,6 +249,16 @@ def DrawCross(Canvas, X,Y):
 	Canvas.create_line(X1,Y1,X1 + EXTRA,Y1+EXTRA,width = 3)
 	Canvas.create_line(X1+EXTRA,Y1,X1,Y1+EXTRA,width = 3)
 
+
+################################
+#      
+# Draws a circle on the play surface at the coordinates given
+# Inputs (Canvas,X,Y)
+# Canvas - The Canvas to Draw on
+# X - X Coordinate in Sections
+# Y - Y Coordinate in Sections
+#
+
 def DrawCircle(Canvas, X,Y):
 	X1 = X*SECTIONSIZE
 	Y1 = Y*SECTIONSIZE
@@ -229,23 +266,328 @@ def DrawCircle(Canvas, X,Y):
 
 	Canvas.create_oval(X1,Y1,X1+EXTRA,Y1+EXTRA,width = 3)
 
+################################
+#      CalculateDesire()
+# Determines the Desire to place a token in the given space, Higher the Better
+# Inputs (X,Y, Type)
+# X - X Coordinate in Sections
+# Y - Y Coordinate in Sections
+# Type - The Type of tile (Cross or Circle)
+#
+
+def CalculateDesire(X,Y,Type):
+	global Table
+  
+	print X,Y,":",
+	if Type == CROSS:
+		Opposite = CIRCLE
+	else:
+		Opposite = CROSS
+
+	Desire = 0	
+
+	######################
+	#Desire Horizontal - Same Type
+
+	Count = 1
+	i = X
+	j = Y
+	i = i+1
+
+
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
+		Count = Count + 1
+		i= i+1
+	print Count," ",
+
+	i = X
+	j = Y
+	i = i -1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
+		Count = Count + 1
+		i= i-1
+	print Count," ",
+	if (Count >= WINNUM):
+		return(1000000000)
+  
+	Desire = Desire + (Count**2)
+
+	######################
+	#Desire Horizontal - Opposite Type
+
+
+
+	Count = 1
+	i = X
+	j = Y
+	i = i+1
+
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite): #While the range is in bounds and the Type (X or O) is the same
+		Count = Count + 1
+		i= i+1
+	print Count," ",
+
+	i = X
+	j = Y
+	i = i -1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite): #Same as above, but it is checking the opposite direction
+		Count = Count + 1
+		i= i-1
+	print Count," ",
+	if (Count >= WINNUM):
+		return(100000000)
+
+	Desire = Desire + (Count**2)
+
+	######################
+	#Desire Vertical - Same Type
+	
+	Count = 1
+	i = X
+	j = Y
+	j = j+1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
+		Count = Count + 1
+		j= j+1
+	print Count," ",
+	i = X
+	j = Y
+	j = j -1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
+		Count = Count + 1
+		Bottom = (i,j)
+		j= j-1
+	print Count," ",
+	if (Count >= WINNUM):
+		return(1000000000)
+
+	Desire = Desire + (Count**2)
+
+	######################
+	#Desire Vertical - Opposite Type
+	
+	Top = (X,Y)
+	Bottom = (X,Y)
+	Count = 1
+	i = X
+	j = Y
+	j = j+1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
+		Count = Count + 1
+		Top = (i,j)
+		j= j+1
+	print Count," ",
+	i = X
+	j = Y
+	j = j -1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
+		Count = Count + 1
+		Bottom = (i,j)
+		j= j-1
+	print Count," ",
+	if (Count >= WINNUM):
+		return(100000000)
+
+	Desire = Desire + (Count**2)
+
+
+	######################
+	#Check / - Same Type
+
+	Top = (X,Y)
+	Bottom = (X,Y)
+	Count = 1
+	i = X
+	j = Y
+	i = i+1
+	j = j-1
+ 
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
+		Count = Count + 1
+		Top = (i,j)
+		i = i+1
+		j = j-1
+		
+	print Count," ",
+	i = X
+	j = Y
+	i = i - 1
+	j = j + 1
+
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
+		Count = Count + 1
+		Bottom = (i,j)
+		j = j + 1
+		i = i - 1
+
+	print Count," ",
+	if (Count >= WINNUM):
+		return(1000000000)
+
+	Desire = Desire + (Count**2)
+
+
+	######################
+	#Check / - Opposite Type
+
+	Top = (X,Y)
+	Bottom = (X,Y)
+	Count = 1
+	i = X
+	j = Y
+	i = i+1
+	j = j-1
+ 
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
+		Count = Count + 1
+		Top = (i,j)
+		i = i+1
+		j = j-1
+		
+	print Count," ",
+	i = X
+	j = Y
+	i = i - 1
+	j = j + 1
+
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
+		Count = Count + 1
+		Bottom = (i,j)
+		j = j + 1
+		i = i - 1
+
+	print Count," ",
+	if (Count >= WINNUM):
+		return(100000000)
+
+	Desire = Desire + (Count**2)
+
+
+	#############################
+	#Check \ - Same Type
+
+	Top = (X,Y)
+	Bottom = (X,Y)
+	Count = 1
+	i = X
+	j = Y
+	i = i + 1
+	j = j + 1
+ 
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
+		Count = Count + 1
+		Top = (i,j)
+		i = i + 1
+		j = j + 1
+		
+	print Count," ",
+	i = X
+	j = Y
+	i = i - 1
+	j = j - 1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
+		Count = Count + 1
+		Bottom = (i,j)
+		j = j - 1
+		i = i - 1
+
+	print Count," ",
+	if (Count >= WINNUM):
+		return(1000000000)
+
+	Desire = Desire + (Count**2)
+
+	#############################
+	#Check \ - Opposite Type
+
+	Top = (X,Y)
+	Bottom = (X,Y)
+	Count = 1
+	i = X
+	j = Y
+	i = i + 1
+	j = j + 1
+ 
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
+		Count = Count + 1
+		Top = (i,j)
+		i = i + 1
+		j = j + 1
+		
+	print Count," ",
+	i = X
+	j = Y
+	i = i - 1
+	j = j - 1
+	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
+		Count = Count + 1
+		Bottom = (i,j)
+		j = j - 1
+		i = i - 1
+	print Count,":",
+
+	if (Count >= WINNUM):
+		return(100000000)
+
+	Desire = Desire + (Count**2)
+	print Desire
+	return Desire
+
+		
+
+################################
+#      AI()
+# Determines where the Circle should go on the board
+# Inputs (Canvas)
+# Canvas - The Canvas to Draw on
+#
+#
 
 def AI(Canvas):
 	global Table
 	global Previous
-	
+
 	OpenSpaces = []
-	SpaceCost = []
+	SpaceDesire = []
+	temptable = [] # temp
 	for i in range(PLAYSIZE):
+		temprow = []  #temp
 		for j in range(PLAYSIZE):
+			temprow.append(0)  #temp
 			if (Table[i][j] == EMPTY):
 				OpenSpaces.append((i,j))
-				
-	DrawCircle(Canvas,OpenSpaces[0][0],OpenSpaces[0][1])
-	Table[OpenSpaces[0][0]][OpenSpaces[0][1]] = CIRCLE
-	Previous = CIRCLE
-	return(OpenSpaces[0])
+		temptable.append(temprow)   #temp
 
+	if OpenSpaces == []:
+		print "Game Over"
+		return(0,0)
+
+	for Space in OpenSpaces:
+		SpaceDesire.append(CalculateDesire(Space[0],Space[1],CIRCLE))
+
+	i = 0  #temp
+	for Space in OpenSpaces:										#temp
+		temptable[Space[1]][Space[0]] = SpaceDesire[i] # temp
+		i = i+1
+	for row in temptable:  #temp
+		print row	#temp
+	print
+  
+	(X,Y) = OpenSpaces[SpaceDesire.index(max(SpaceDesire))]
+	DrawCircle(Canvas,X,Y)
+	Table[X][Y] = CIRCLE
+	Previous = CIRCLE
+
+	return(X,Y)
+
+
+################################
+#      
+# Bound to the Mouse click, Interprets the mouse click as a play by the user
+# Inputs (event)
+# event - The Event generate by Tk
+#
+#
 
 def play(event):
 
@@ -271,8 +613,10 @@ def play(event):
 			else:			
 				Section = AI(Canvas)
 				Win = CheckWin(Section[0],Section[1])
-				if Win != 0: #Human Win
+				if Win != 0: #AI Win
 					redline(Canvas, Win[0], Win[1])
+
+
 
 page = Canvas(root, width = BOARDSIZE, height = BOARDSIZE)
 page.grid()
