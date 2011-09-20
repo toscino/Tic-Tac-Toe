@@ -9,6 +9,7 @@
 # v2.1 - Computer plans its moves a little, but it isn't great (don't think it is possible to win 3x3)
 # v2.2 - Rewrote Some of the functions (CheckWin and CalculateDesire) Same functionality but cleaner code
 # v2.3 - Rewrote CalculateDesire again to account for multiple win/lose scenarios in the same line, will make future upgrades easier
+#	v2.4 - The Calculations are as good as I can get them, It would be fun if it could learn, but that seems beyond me. I don't think you can win without an early trick that is impossible to beat
 #
 
 from Tkinter import *
@@ -37,7 +38,8 @@ CROSS = 2
 GAMEOVER = 3
 
 EMPTYCOUNT = 1
-TYPECOUNT = 2
+SAMECOUNT = 3  #must be > EMPTYCOUNT +1
+OPPCOUNT = 4
 
 root = Tk()
 
@@ -242,23 +244,33 @@ def CalculateDesire(X,Y,Same):
 
 #################
 # For both the same type and opposite calculate all of the possible win/lose scenarios
-# Currently doesn't take empties spaces into account. 
+# 
 #
 
-		for Type in [Same,Opposite]:
+		for OppType in [Same,Opposite]:
 			for i in range(WINNUM): 
 				j = 0
-				Count = 0
-				while (j < WINNUM and (Line[i+j] == Type or Line[i+j] == 'O')):  #Add up a whole win scenario length
-					Count += 1
+				Count = 1
+				while (j < WINNUM and Line[i+j] != OppType and Line[i+j] != 'X'):  #Add up a whole win scenario length
+					if Line[i+j] == EMPTY:
+						Count += EMPTYCOUNT
+					elif OppType != Same:
+						Count *= SAMECOUNT
+					else:
+						Count *= OPPCOUNT
 					j += 1
 
+				if j != WINNUM:
+					Count = 0
 
-				if Count >= WINNUM:	#if there is an immediate win/lose scenarion take it
-					if Type == Same:
-						return(10000)
-					else:
-						return(1000)
+				if OppType != Same and Count >= (SAMECOUNT**WINNUM):	#if there is an immediate win scenarion take it
+						print Line[i:i+j],":",Count
+						return(10000000)
+
+				elif Count >= (OPPCOUNT**WINNUM):
+						print Line[i:i+j],":",Count		#if there is an immediate lose scenarion take it
+						return(100000)
+
 
 				Desire += Count**2
 
