@@ -7,7 +7,9 @@
 # v1.0 - Game Works, Two humans only 
 # v2.0 - Added Computer Player, but it just picks the first available space
 # v2.1 - Computer plans its moves a little, but it isn't great (don't think it is possible to win 3x3)
+# v2.2 - Rewrote Some of the functions (CheckWin and CalculateDesire) Same functionality but cleaner code
 #
+
 
 from Tkinter import *
 from random import *
@@ -93,122 +95,35 @@ def CheckWin(X,Y):
 	global Table
 
 	Type = Table[X][Y]  
+	XChange = (1,0,1,-1)
+	YChange = (0,1,1,1)		
+	
+	for k in range(4):
+		Top = (X,Y)	
+		Bottom = (X,Y)
+		Count = 1
 
-	######################
-	#Check Horizontal
+		i = X + XChange[k]
+		j = Y + YChange[k]
 
-	Top = (X,Y)	
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i+1
-
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
-		Count = Count + 1
-		Top = (i,j)
-		i= i+1
-
-
-	i = X
-	j = Y
-	i = i -1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
-		Count = Count + 1
-		Bottom = (i,j)
-		i= i-1
-
-	if (Count >= WINNUM):
-		return (Top,Bottom)
-
-	######################
-	#Check Vertical
-
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	j = j+1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Top = (i,j)
-		j= j+1
-
-	i = X
-	j = Y
-	j = j -1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Bottom = (i,j)
-		j= j-1
-
-	if (Count >= WINNUM):
-		return (Top,Bottom)
+		while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
+			Count = Count + 1
+			Top = (i,j)
+			i = i + XChange[k]
+			j = j + YChange[k]
 
 
-	#####################m#
-	#Check /
+		i = X - XChange[k]
+		j = Y - YChange[k]
+		while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
+			Count = Count + 1
+			Bottom = (i,j)
+			i = i - XChange[k]
+			j = j - YChange[k]
 
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i+1
-	j = j-1
- 
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Top = (i,j)
-		i = i+1
-		j = j-1
-		
 
-	i = X
-	j = Y
-	i = i - 1
-	j = j + 1
-
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Bottom = (i,j)
-		j = j + 1
-		i = i - 1
-
-	if (Count >= WINNUM):
-		return (Top,Bottom)
-
-	#############################
-	#Check \
-
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i + 1
-	j = j + 1
- 
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Top = (i,j)
-		i = i + 1
-		j = j + 1
-		
-
-	i = X
-	j = Y
-	i = i - 1
-	j = j - 1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Bottom = (i,j)
-		j = j - 1
-		i = i - 1
-
-	if (Count >= WINNUM):
-		return (Top,Bottom)
+		if (Count >= WINNUM):
+			return (Top,Bottom)
 
 	return 0;
 
@@ -275,265 +190,53 @@ def DrawCircle(Canvas, X,Y):
 # Type - The Type of tile (Cross or Circle)
 #
 
-def CalculateDesire(X,Y,Type):
+def CalculateDesire(X,Y,Same):
 	global Table
   
-	print X,Y,":",
-	if Type == CROSS:
+
+	if Same == CROSS:
 		Opposite = CIRCLE
 	else:
 		Opposite = CROSS
 
 	Desire = 0	
 
-	######################
-	#Desire Horizontal - Same Type
+	XChange = (1,0,1,-1)
+	YChange = (0,1,1,1)		
+	Type = Same
 
-	Count = 1
-	i = X
-	j = Y
-	i = i+1
-
-
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
-		Count = Count + 1
-		i= i+1
-	print Count," ",
-
-	i = X
-	j = Y
-	i = i -1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
-		Count = Count + 1
-		i= i-1
-	print Count," ",
-	if (Count >= WINNUM):
-		return(1000000000)
-  
-	Desire = Desire + (Count**2)
-
-	######################
-	#Desire Horizontal - Opposite Type
-
-
-
-	Count = 1
-	i = X
-	j = Y
-	i = i+1
-
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite): #While the range is in bounds and the Type (X or O) is the same
-		Count = Count + 1
-		i= i+1
-	print Count," ",
-
-	i = X
-	j = Y
-	i = i -1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite): #Same as above, but it is checking the opposite direction
-		Count = Count + 1
-		i= i-1
-	print Count," ",
-	if (Count >= WINNUM):
-		return(100000000)
-
-	Desire = Desire + (Count**2)
-
-	######################
-	#Desire Vertical - Same Type
+########################
+# Calculate the Desire for the 4 Directions - Same Type and Opposite
+#
+	for Type in [Same, Opposite]:
+		for k in range(4):
+			Count = 1
 	
-	Count = 1
-	i = X
-	j = Y
-	j = j+1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		j= j+1
-	print Count," ",
-	i = X
-	j = Y
-	j = j -1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Bottom = (i,j)
-		j= j-1
-	print Count," ",
-	if (Count >= WINNUM):
-		return(1000000000)
-
-	Desire = Desire + (Count**2)
-
-	######################
-	#Desire Vertical - Opposite Type
+			i = X + XChange[k]
+			j = Y + YChange[k]
 	
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	j = j+1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
-		Count = Count + 1
-		Top = (i,j)
-		j= j+1
-	print Count," ",
-	i = X
-	j = Y
-	j = j -1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
-		Count = Count + 1
-		Bottom = (i,j)
-		j= j-1
-	print Count," ",
-	if (Count >= WINNUM):
-		return(100000000)
+			while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
+				Count = Count + 1
+				i = i + XChange[k]
+				j = j + YChange[k]
+	
+	
+			i = X - XChange[k]
+			j = Y - YChange[k]
+			while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
+				Count = Count + 1
+				i = i - XChange[k]
+				j = j - YChange[k]
+	
+			if (Count >= WINNUM):
+				if Type == Same:
+					return(1000000000)
+				else:
+					return(100000000)
+	
+			Desire = Desire + (Count**2)
 
-	Desire = Desire + (Count**2)
-
-
-	######################
-	#Check / - Same Type
-
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i+1
-	j = j-1
- 
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Top = (i,j)
-		i = i+1
-		j = j-1
-		
-	print Count," ",
-	i = X
-	j = Y
-	i = i - 1
-	j = j + 1
-
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Bottom = (i,j)
-		j = j + 1
-		i = i - 1
-
-	print Count," ",
-	if (Count >= WINNUM):
-		return(1000000000)
-
-	Desire = Desire + (Count**2)
-
-
-	######################
-	#Check / - Opposite Type
-
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i+1
-	j = j-1
- 
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
-		Count = Count + 1
-		Top = (i,j)
-		i = i+1
-		j = j-1
-		
-	print Count," ",
-	i = X
-	j = Y
-	i = i - 1
-	j = j + 1
-
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
-		Count = Count + 1
-		Bottom = (i,j)
-		j = j + 1
-		i = i - 1
-
-	print Count," ",
-	if (Count >= WINNUM):
-		return(100000000)
-
-	Desire = Desire + (Count**2)
-
-
-	#############################
-	#Check \ - Same Type
-
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i + 1
-	j = j + 1
- 
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Top = (i,j)
-		i = i + 1
-		j = j + 1
-		
-	print Count," ",
-	i = X
-	j = Y
-	i = i - 1
-	j = j - 1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type):
-		Count = Count + 1
-		Bottom = (i,j)
-		j = j - 1
-		i = i - 1
-
-	print Count," ",
-	if (Count >= WINNUM):
-		return(1000000000)
-
-	Desire = Desire + (Count**2)
-
-	#############################
-	#Check \ - Opposite Type
-
-	Top = (X,Y)
-	Bottom = (X,Y)
-	Count = 1
-	i = X
-	j = Y
-	i = i + 1
-	j = j + 1
- 
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
-		Count = Count + 1
-		Top = (i,j)
-		i = i + 1
-		j = j + 1
-		
-	print Count," ",
-	i = X
-	j = Y
-	i = i - 1
-	j = j - 1
-	while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Opposite):
-		Count = Count + 1
-		Bottom = (i,j)
-		j = j - 1
-		i = i - 1
-	print Count,":",
-
-	if (Count >= WINNUM):
-		return(100000000)
-
-	Desire = Desire + (Count**2)
-	print Desire
 	return Desire
-
-		
 
 ################################
 #      AI()
@@ -559,7 +262,7 @@ def AI(Canvas):
 		temptable.append(temprow)   #temp
 
 	if OpenSpaces == []:
-		print "Game Over"
+		print "Game Over!"
 		return(0,0)
 
 	for Space in OpenSpaces:
