@@ -8,8 +8,8 @@
 # v2.0 - Added Computer Player, but it just picks the first available space
 # v2.1 - Computer plans its moves a little, but it isn't great (don't think it is possible to win 3x3)
 # v2.2 - Rewrote Some of the functions (CheckWin and CalculateDesire) Same functionality but cleaner code
+# v2.3 - Rewrote CalculateDesire again to account for multiple win/lose scenarios in the same line, will make future upgrades easier
 #
-
 
 from Tkinter import *
 from random import *
@@ -35,6 +35,9 @@ EMPTY = 0
 CIRCLE = 1
 CROSS = 2
 GAMEOVER = 3
+
+EMPTYCOUNT = 1
+TYPECOUNT = 2
 
 root = Tk()
 
@@ -203,44 +206,67 @@ def CalculateDesire(X,Y,Same):
 
 	XChange = (1,0,1,-1)
 	YChange = (0,1,1,1)		
-	Type = Same
+
 
 ########################
-# Calculate the Desire for the 4 Directions - Same Type and Opposite
+# Create Lines for the Four Directions -,|,\,/
 #
-	for Type in [Same, Opposite]:
-		for k in range(4):
-			Count = 1
-	
-			i = X + XChange[k]
-			j = Y + YChange[k]
-	
-			while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #While the range is in bounds and the Type (X or O) is the same
-				Count = Count + 1
-				i = i + XChange[k]
-				j = j + YChange[k]
-	
-	
-			i = X - XChange[k]
-			j = Y - YChange[k]
-			while(0 <= i <= (PLAYSIZE-1) and 0 <= j <= (PLAYSIZE-1) and Table[i][j] == Type): #Same as above, but it is checking the opposite direction
-				Count = Count + 1
-				i = i - XChange[k]
-				j = j - YChange[k]
-	
-			if (Count >= WINNUM):
-				if Type == Same:
-					return(1000000000)
-				else:
-					return(100000000)
-	
-			Desire = Desire + (Count**2)
+
+	for k in range(4):
+		Line = ['O']
+
+
+		i = X + XChange[k]
+		j = Y + YChange[k]
+		for m in range(WINNUM-1):
+			if (0 <= i < PLAYSIZE and 0 <= j < PLAYSIZE):
+				Line.append(Table[i][j])
+			else:
+				Line.append('X')
+			i = i + XChange[k]
+			j = j + YChange[k]
+
+
+		i = X - XChange[k]
+		j = Y - YChange[k]
+
+		for m in range(WINNUM-1):
+			if (0 <= i < PLAYSIZE and 0 <= j < PLAYSIZE):
+				Line.insert(0,Table[i][j])
+			else:
+				Line.insert(0,'X')
+
+			i = i - XChange[k]
+			j = j - YChange[k]
+
+
+#################
+# For both the same type and opposite calculate all of the possible win/lose scenarios
+# Currently doesn't take empties spaces into account. 
+#
+
+		for Type in [Same,Opposite]:
+			for i in range(WINNUM): 
+				j = 0
+				Count = 0
+				while (j < WINNUM and (Line[i+j] == Type or Line[i+j] == 'O')):  #Add up a whole win scenario length
+					Count += 1
+					j += 1
+
+
+				if Count >= WINNUM:	#if there is an immediate win/lose scenarion take it
+					if Type == Same:
+						return(10000)
+					else:
+						return(1000)
+
+				Desire += Count**2
 
 	return Desire
 
 ################################
 #      AI()
-# Determines where the Circle should go on the board
+# Determines where the Cirrcle should go on the board
 # Inputs (Canvas)
 # Canvas - The Canvas to Draw on
 #
